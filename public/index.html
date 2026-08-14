@@ -4,6 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Windows Disk Manager — Disk Analysis Dashboard</title>
+<script>
+  // Legacy-browser guard (Internet Explorer / engines without fetch):
+  // replace the page with a short notice so users know what to install.
+  (function () {
+    var legacy = false;
+    try {
+      legacy = !!document.documentMode || !window.fetch || !window.Promise || !document.querySelector;
+    } catch (e) { legacy = true; }
+    if (legacy) {
+      document.addEventListener('DOMContentLoaded', function () {
+        var b = document.body;
+        if (!b) return;
+        b.innerHTML =
+          '<div style="font-family:Segoe UI,Arial,sans-serif;padding:40px;max-width:640px;margin:0 auto;color:#e6edf3;background:#0e1117;min-height:100vh">' +
+          '<h1 style="font-size:22px;margin:0 0 12px">Windows Disk Manager</h1>' +
+          '<p style="font-size:14px;line-height:1.7;margin:0 0 12px">Your browser is too old to run the dashboard.</p>' +
+          '<p style="font-size:14px;line-height:1.7;margin:0 0 12px">Please use a modern browser:<br>' +
+          '&bull; Google Chrome 49+ (Chrome 109 is the last version for Windows 7)<br>' +
+          '&bull; Mozilla Firefox 45+ (Firefox 115 ESR is the last version for Windows 7)<br>' +
+          '&bull; Microsoft Edge</p>' +
+          '<p style="font-size:13px;color:#8b98a9">The server keeps running — just refresh this page after installing a browser.</p>' +
+          '</div>';
+      });
+    }
+  })();
+</script>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>

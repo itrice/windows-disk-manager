@@ -1,14 +1,41 @@
 {
   "name": "windows-disk-manager",
-  "version": "1.0.0",
-  "description": "Disk usage analysis & draft cleanup tool with a web dashboard. Scans a directory, builds analysis reports (size by folder/extension, largest files, drafts/temp/backup files, old files, empty folders) and lets you select rows in the dashboard to move to trash or permanently delete.",
+  "version": "1.1.0",
+  "description": "Disk usage analysis & draft cleanup tool with a web dashboard. Scans a directory, builds analysis reports (size by folder/extension, largest files, drafts/temp/backup files, old files, empty folders) and lets you select rows in the dashboard to move to trash or permanently delete. Packaged as a single-file executable for Windows 7+ (no Node.js installation required).",
   "main": "server.js",
+  "bin": "server.js",
   "type": "commonjs",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=12.0.0"
+  },
   "scripts": {
     "start": "node server.js",
-    "test": "node test/smoke.mjs"
+    "test": "node test/smoke.mjs",
+    "build": "pkg . --targets node12-win-x64 --output dist/windows-disk-manager",
+    "build:win": "pkg . --targets node12-win-x64 --output dist/windows-disk-manager",
+    "build:linux": "pkg . --targets node12-linux-x64 --output dist/windows-disk-manager",
+    "build:x86": "node scripts/build-x86-portable.mjs"
   },
-  "keywords": ["disk", "disk-usage", "cleanup", "drafts", "dashboard", "trash"],
+  "pkg": {
+    "assets": [
+      "public/**/*",
+      "config.json"
+    ],
+    "targets": [
+      "node12-win-x64"
+    ]
+  },
+  "devDependencies": {
+    "pkg": "^5.8.1"
+  },
+  "keywords": [
+    "disk",
+    "disk-usage",
+    "cleanup",
+    "drafts",
+    "dashboard",
+    "trash",
+    "windows7"
+  ],
   "license": "MIT"
 }

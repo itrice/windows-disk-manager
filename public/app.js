@@ -193,6 +193,10 @@ function renderCharts() {
     $('#extLegend').innerHTML = emptyState('No files scanned yet.');
     return;
   }
+  // conic-gradient is unavailable on some older engines (e.g. Edge legacy on Win7);
+  // fall back to showing percentages in the legend.
+  const supportsConic = typeof CSS !== 'undefined' && CSS.supports &&
+    CSS.supports('background', 'conic-gradient(red, blue)');
   let acc = 0;
   const stops = [];
   for (let i = 0; i < exts.length; i++) {
@@ -200,11 +204,20 @@ function renderCharts() {
     stops.push(PALETTE[i % PALETTE.length] + ' ' + acc.toFixed(2) + '% ' + (acc + pct).toFixed(2) + '%');
     acc += pct;
   }
-  donut.style.background = 'conic-gradient(' + stops.join(', ') + ')';
-  $('#extLegend').innerHTML = exts.map((e, i) =>
-    '<div class="row"><span class="sw" style="background:' + PALETTE[i % PALETTE.length] + '"></span>' +
-    '<span class="ext">' + escapeHtml(e.ext) + '</span><span class="muted">' + e.count.toLocaleString() + '</span>' +
-    '<span class="val">' + fmtBytes(e.size) + '</span></div>').join('');
+  if (supportsConic) {
+    donut.style.background = 'conic-gradient(' + stops.join(', ') + ')';
+  } else {
+    donut.classList.add('no-conic');
+    donut.style.background = '';
+  }
+  $('#extLegend').innerHTML = exts.map((e, i) => {
+    const share = total ? Math.round((e.size / total) * 1000) / 10 : 0;
+    return '<div class="row"><span class="sw" style="background:' + PALETTE[i % PALETTE.length] + '"></span>' +
+      '<span class="ext">' + escapeHtml(e.ext) + '</span><span class="muted">' + e.count.toLocaleString() + '</span>' +
+      '<span class="val">' + fmtBytes(e.size) + '</span>' +
+      (supportsConic ? '' : '<span class="share muted">' + share + '%</span>') +
+      '</div>';
+  }).join('');
 }
 
 /* ============================== tabs ============================== */

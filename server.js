@@ -8,9 +8,12 @@ const { URL } = require('url');
 const { DiskScanner, buildDerived, publicReport } = require('./lib/scanner');
 const { deleteItems, listLocalTrash, restoreFromLocalTrash, readAudit } = require('./lib/delete');
 
+// ROOT_DIR points into the pkg snapshot when packaged (read-only embedded assets).
+// APP_DIR is the writable runtime directory (next to the .exe when packaged).
 const ROOT_DIR = __dirname;
+const APP_DIR = process.pkg ? path.dirname(process.execPath) : __dirname;
 const PUBLIC_DIR = path.join(ROOT_DIR, 'public');
-const REPORT_FILE = path.join(ROOT_DIR, 'reports', 'latest-report.json');
+const REPORT_FILE = path.join(APP_DIR, 'reports', 'latest-report.json');
 
 /* ------------------------------ CLI / config ------------------------------ */
 
@@ -28,20 +31,31 @@ function parseArgs(argv) {
 }
 
 function loadConfig(cli) {
+  const cfgPath = path.join(APP_DIR, 'config.json');
   let file = {};
-  try { file = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'config.json'), 'utf8')); } catch (_) {}
+  try {
+    file = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+  } catch (_) {
+    // First run: seed config.json from embedded defaults (pkg snapshot when packaged).
+    try {
+      const embedded = fs.readFileSync(path.join(ROOT_DIR, 'config.json'), 'utf8');
+      file = JSON.parse(embedded);
+      fs.mkdirSync(APP_DIR, { recursive: true });
+      fs.writeFileSync(cfgPath, embedded, 'utf8');
+    } catch (_2) { file = {}; }
+  }
   const cfg = Object.assign({}, file);
   if (cli.root) cfg.root = path.resolve(String(cli.root));
   if (cli.port) cfg.port = Number(cli.port);
   if (cli.host) cfg.host = String(cli.host);
-  cfg.dataDir = cfg.dataDir || path.join(ROOT_DIR, '.data');
+  cfg.dataDir = path.resolve(APP_DIR, cfg.dataDir || '.data');
   return cfg;
 }
 
 const cli = parseArgs(process.argv.slice(2));
 if (cli.help) {
   console.log('Windows Disk Manager');
-  console.log('Usage: node server.js [--root <path>] [--port <n>] [--host <ip>] [--open]');
+  console.log('Usage: windows-disk-manager [--root <path>] [--port <n>] [--host <ip>] [--open] [--no-open]');
   process.exit(0);
 }
 const config = loadConfig(cli);
@@ -329,7 +343,7 @@ const server = http.createServer(async (req, res) => {
       if (body.root) config.root = path.resolve(String(body.root));
       const file = Object.assign({}, config);
       delete file.dataDir;
-      fs.writeFileSync(path.join(ROOT_DIR, 'config.json'), JSON.stringify(file, null, 2), 'utf8');
+      fs.writeFileSync(path.join(APP_DIR, 'config.json'), JSON.stringify(file, null, 2), 'utf8');
       sendJSON(res, 200, { ok: true, config: Object.assign({}, config, { rootExists: config.root ? fs.existsSync(config.root) : false }) });
       return;
     }
@@ -384,11 +398,18 @@ server.listen(port, host, () => {
   console.log('  Scan root: ' + (config.root || '(not set — use the dashboard or --root)'));
   console.log('  API: ' + url + '/api/status   |   Reports: ' + url + '/api/report');
   console.log('');
-  if (cli.open) {
-    const opener = process.platform === 'win32' ? 'start' : process.platform === 'darwin' ? 'open' : 'xdg-open';
-    const { execFile } = require('child_process');
-    execFile(opener, [url], () => {});
+  const openOnBoot = (cli.open || !!process.pkg) && !cli['no-open'];
+  if (openOnBoot) {
+    const { exec } = require('child_process');
+    if (process.platform === 'win32') {
+      exec('start "" "' + url + '"', { windowsHide: true }, () => {});
+    } else if (process.platform === 'darwin') {
+      exec('open "' + url + '"', () => {});
+    } else {
+      exec('xdg-open "' + url + '"', () => {});
+    }
   }
+  if (process.pkg) console.log('  Packaged build — runtime dir: ' + APP_DIR);
 });
 
 process.on('SIGINT', () => { console.log('\nStopping server.'); process.exit(0); });

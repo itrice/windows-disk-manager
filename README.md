@@ -120,6 +120,51 @@ Created on first run. Fields:
 - On Windows, "Move to trash" sends items to the Recycle Bin via PowerShell
   (Microsoft.VisualBasic FileIO), so normal Windows restore applies.
 
+
+## Production release (no Node.js required)
+
+The app can be packaged as a single-file executable that runs on Windows without
+installing Node.js:
+
+    npm install          # installs pkg (build tool only)
+    npm run build        # builds the 64-bit Windows executable into dist/
+    npm run build:x86    # builds the 32-bit portable zip (for 32-bit Windows 7)
+    npm run build:linux  # builds a Linux executable (for testing)
+
+Output in dist/:
+
+    windows-disk-manager-win-x64.exe        64-bit Windows, single .exe
+                                            (Windows 7 SP1 x64 and newer)
+    windows-disk-manager-win-x86-portable.zip  32-bit portable package:
+                                            unzip, double-click start.bat
+                                            (for 32-bit Windows 7; bundles
+                                            the official Node 12.22.12 x86
+                                            runtime because pkg has no x86
+                                            base binary for Node 12)
+    windows-disk-manager-linux-x64          Linux
+
+Run the .exe by double-clicking it: it starts the local dashboard server and opens
+your browser automatically. All runtime data (config.json, .data, reports/) is
+kept in the same folder as the executable.
+
+### Windows 7 notes
+
+- The executable bundles Node.js 12.22 — the last Node line with official Windows 7
+  support. It requires Windows 7 SP1 (64-bit or 32-bit).
+- The dashboard needs a browser with fetch + CSS variables. On Windows 7 use:
+  - Google Chrome 109 (the last Chrome for Windows 7), or
+  - Mozilla Firefox 115 ESR (the last Firefox for Windows 7), or
+  - Microsoft Edge
+  Internet Explorer 11 is detected and shows an upgrade notice.
+- "Move to trash" uses the Windows Recycle Bin through PowerShell (inbox on Win7).
+- The bundled Node 12 runtime is end-of-life; prefer modern Windows where possible.
+  For ongoing security you can rebuild the executable whenever you like.
+
+### Portable usage
+
+Copy the .exe anywhere (USB stick, network share) and run it. Because the server
+binds to 127.0.0.1 by default, only the local user can reach the dashboard.
+
 ## Development
 
 Run the end-to-end smoke test (starts a server, scans a generated fixture,
