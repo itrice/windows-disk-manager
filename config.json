@@ -1,0 +1,25 @@
+{
+  "port": 3177,
+  "host": "127.0.0.1",
+  "root": null,
+  "maxDepth": 40,
+  "concurrency": 12,
+  "followSymlinks": false,
+  "oldFileDays": 180,
+  "ignoreDirNames": [
+    "node_modules", ".git", ".hg", ".svn", ".next", ".turbo", ".cache",
+    ".Trash", "$RECYCLE.BIN", "System Volume Information", "System Volume Information",
+    "__pycache__", ".venv", "venv", ".tox", ".mypy_cache", ".pytest_cache",
+    "reports", ".data"
+  ],
+  "draftPatterns": [
+    { "id": "office-temp",  "label": "Office lock/temp files",   "category": "temp",    "patterns": ["~$*"] },
+    { "id": "temp-ext",     "label": "Temp files (.tmp/.temp)",  "category": "temp",    "patterns": ["*.tmp", "*.temp", "*.tmp~", "*.temp~"] },
+    { "id": "editor-temp",  "label": "Editor swap files",        "category": "temp",    "patterns": ["*.swp", "*.swo", "*~"] },
+    { "id": "draft-name",   "label": "Files named *draft*",      "category": "draft",   "patterns": ["*draft*", "*Draft*", "*drafts*", "*Drafts*"] },
+    { "id": "backup",       "label": "Backup files",             "category": "backup",  "patterns": ["*.bak", "*.backup", "*.old", "*.orig", "*.rej", "*.bk~"] },
+    { "id": "partial",      "label": "Partial downloads",        "category": "partial", "patterns": ["*.part", "*.crdownload", "*.download", "*.opdownload"] },
+    { "id": "junk",         "label": "Junk (DS_Store/Thumbs.db)", "category": "junk",   "patterns": [".DS_Store", "Thumbs.db", ".thumbs.db"] }
+  ],
+  "dataDir": ".data"
+}
